@@ -34,22 +34,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         gameSurface = new GameSurface(this);
         setContentView(gameSurface);
-        Timer t = new Timer();
-        t.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                AtomicInteger quarterSeconds = new AtomicInteger(240);
-                if (quarterSeconds.get() != 0) {
-                    quarterSeconds.decrementAndGet();
-                }
-                runOnUiThread(() -> {
-                    if (quarterSeconds.get() % 4 == 0) {
-                        System.out.println(String.valueOf(quarterSeconds.get() / 4));
-                    }
-                });
-            }
 
-        }, 0, 250);
     }
 
     @Override
@@ -104,10 +89,30 @@ public class MainActivity extends AppCompatActivity {
                     continue;
                 // https://developer.android.com/reference/android/graphics/Canvas
                 Canvas canvas = holder.lockCanvas();
+                Timer t = new Timer();
 
-                canvas.drawRGB(255, 0, 0);
-                canvas.drawBitmap(bg,25,30,null);
-                canvas.drawBitmap(car, 475, 1550, null);
+                t.scheduleAtFixedRate(new TimerTask() {
+                    @Override
+                    public void run() {
+                        AtomicInteger quarterSeconds = new AtomicInteger(240);
+                        if (quarterSeconds.get() != 0) {
+                            quarterSeconds.decrementAndGet();
+                        }
+                        runOnUiThread(() -> {
+                            if (quarterSeconds.get() % 4 == 0) {
+                                canvas.drawRGB(255, 0, 0);
+                                canvas.drawBitmap(bg,25,30,null);
+                                canvas.drawBitmap(car, 475, 1550, null);
+                                canvas.drawBitmap(cary, x, x, null);
+
+                                System.out.println(String.valueOf(quarterSeconds.get() / 4));
+                            }
+                        });
+                    }
+
+                }, 0, 250);
+
+
                 holder.unlockCanvasAndPost(canvas);
             }
         }
