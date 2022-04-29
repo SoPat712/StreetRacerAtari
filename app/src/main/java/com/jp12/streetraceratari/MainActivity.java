@@ -8,6 +8,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Display;
@@ -23,16 +27,23 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
     //Code from this program has been used from Beginning Android Games
     //Review SurfaceView, Canvas, continue
 
     GameSurface gameSurface;
-
+    SensorManager mSensorManager;
+    Sensor mAccelerometer;
+    boolean moveLeft = false;
+    boolean moveRight = false;
+    int carPos = 475;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         gameSurface = new GameSurface(this);
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mSensorManager.registerListener((SensorEventListener) this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         setContentView(gameSurface);
 
     }
@@ -49,6 +60,25 @@ public class MainActivity extends AppCompatActivity {
         gameSurface.resume();
     }
 
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        float x = event.values[0];
+        float y = event.values[1];
+        float z = event.values[2];
+        if(y<0){
+            moveLeft = true;
+            moveRight = false;
+        }
+        else {
+            moveRight = true;
+            moveLeft = false;
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
 
     //----------------------------GameSurface Below This Line--------------------------
     public class GameSurface extends SurfaceView implements Runnable {
@@ -59,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
         volatile boolean running = false;
         Bitmap car;
         Bitmap bg;
-
         Paint paintProperty;
 
         int screenWidth;
@@ -87,33 +116,17 @@ public class MainActivity extends AppCompatActivity {
             while (running == true) {
                 if (holder.getSurface().isValid() == false)
                     continue;
-                // https://developer.android.com/reference/android/graphics/Canvas
                 Canvas canvas = holder.lockCanvas();
-                Timer t = new Timer();
-
-                t.scheduleAtFixedRate(new TimerTask() {
-                    @Override
-                    public void run() {
-                        AtomicInteger quarterSeconds = new AtomicInteger(240);
-                        if (quarterSeconds.get() != 0) {
-                            quarterSeconds.decrementAndGet();
-                        }
-                        runOnUiThread(() -> {
-                            if (quarterSeconds.get() % 4 == 0) {
-                                canvas.drawRGB(255, 0, 0);
-                                canvas.drawBitmap(bg,25,30,null);
-                                canvas.drawBitmap(car, 475, 1550, null);
-                                canvas.drawBitmap(cary, x, x, null);
-
-                                System.out.println(String.valueOf(quarterSeconds.get() / 4));
-                            }
-                        });
-                    }
-
-                }, 0, 250);
-
-
+                canvas.drawRGB(255, 0, 0);
+                canvas.drawBitmap(bg,25,30,null);
+                if(carPos > 100 && moveLeft == true && moveRight ==false){
+                    carPos -= 5;
+                } else if (carPos > 100 && moveLeft == true && moveRight ==false){
+                    carPos += 5;
+                }
+                canvas.drawBitmap(car, carPos, 1550, null);
                 holder.unlockCanvasAndPost(canvas);
+
             }
         }
 
