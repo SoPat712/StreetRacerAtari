@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -65,12 +66,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         float x = event.values[0];
         float y = event.values[1];
         float z = event.values[2];
-        if(y<0){
+        System.out.println("x: "+x+", y: "+y+", z: "+z);
+        System.out.println("carPos: "+carPos);
+        if(x>2){
+            System.out.println("moving left");
             moveLeft = true;
             moveRight = false;
-        }
-        else {
+        } else if (x<-2){
+            System.out.println("moving right");
             moveRight = true;
+            moveLeft = false;
+        } else if (x<2 && x > -2){
+            System.out.println("not moving");
+            moveRight = false;
             moveLeft = false;
         }
     }
@@ -118,11 +126,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     continue;
                 Canvas canvas = holder.lockCanvas();
                 canvas.drawRGB(255, 0, 0);
-                canvas.drawBitmap(bg,25,30,null);
-                if(carPos > 100 && moveLeft == true && moveRight ==false){
-                    carPos -= 5;
-                } else if (carPos > 100 && moveLeft == true && moveRight ==false){
-                    carPos += 5;
+                Rect myCar = new Rect();
+                Rect enemyCar = new Rect();
+                canvas.drawBitmap(bg,0,0,null);
+                if(carPos > 195 && carPos <= 685 & moveLeft && !moveRight){
+                    carPos -= 10;
+                } else if (carPos >= 195 && carPos < 685 & !moveLeft && moveRight){
+                    carPos += 10;
                 }
                 canvas.drawBitmap(car, carPos, 1550, null);
                 holder.unlockCanvasAndPost(canvas);
