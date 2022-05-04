@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         gameSurface = new GameSurface(this);
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mSensorManager.registerListener((SensorEventListener) this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
         setContentView(gameSurface);
 
     }
@@ -105,9 +105,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public GameSurface(Context context) {
             super(context);
             holder = getHolder();
-            bg = BitmapFactory.decodeResource(getResources(), R.drawable.atari);
-            car = BitmapFactory.decodeResource(getResources(), R.drawable.car);
 
+            car = BitmapFactory.decodeResource(getResources(), R.drawable.car);
+            bg = BitmapFactory.decodeResource(getResources(), R.drawable.atari);
             Display screenDisplay = getWindowManager().getDefaultDisplay();
             Point sizeOfScreen = new Point();
             screenDisplay.getSize(sizeOfScreen);
