@@ -15,6 +15,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -35,9 +36,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     GameSurface gameSurface;
     SensorManager mSensorManager;
     Sensor mAccelerometer;
-    boolean moveLeft = false;
-    boolean moveRight = false;
-    int carPos = 475;
+    int carPos = 220;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,28 +60,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         gameSurface.resume();
     }
 
+
     @Override
     public void onSensorChanged(SensorEvent event) {
-        float x = event.values[0];
-        float y = event.values[1];
-        float z = event.values[2];
-        System.out.println("x: "+x+", y: "+y+", z: "+z);
-        System.out.println("carPos: "+carPos);
-        if(x>2){
-            System.out.println("moving left");
-            moveLeft = true;
-            moveRight = false;
-        } else if (x<-2){
-            System.out.println("moving right");
-            moveRight = true;
-            moveLeft = false;
-        } else if (x<2 && x > -2){
-            System.out.println("not moving");
-            moveRight = false;
-            moveLeft = false;
-        }
+        float x = (int) event.values[0];
+        if(carPos > 900) carPos = 900;
+        if(carPos < 195) carPos = 195;
+        if(x >= 7) {carPos -= 20; return;}
+        if(x >= 5) {carPos -= 10; return;}
+        if(x >= 3) {carPos -= 8; return;}
+        if(x >= 2) {carPos -= 5; return;}
+        if(x >= 1) {carPos -= 3; return;}
+        if(x <= -7) {carPos += 20; return;}
+        if(x <= -5) {carPos += 10; return;}
+        if(x <= -3) {carPos += 8; return;}
+        if(x <= -2) {carPos += 5; return;}
+        if(x <= -1) carPos += 3;
     }
-
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
@@ -121,19 +115,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         @Override
         public void run() {
-            while (running == true) {
-                if (holder.getSurface().isValid() == false)
+            while (running) {
+                if (!holder.getSurface().isValid())
                     continue;
                 Canvas canvas = holder.lockCanvas();
                 canvas.drawRGB(255, 0, 0);
                 Rect myCar = new Rect();
                 Rect enemyCar = new Rect();
                 canvas.drawBitmap(bg,0,0,null);
-                if(carPos > 195 && carPos <= 685 & moveLeft && !moveRight){
-                    carPos -= 10;
-                } else if (carPos >= 195 && carPos < 685 & !moveLeft && moveRight){
-                    carPos += 10;
-                }
                 canvas.drawBitmap(car, carPos, 1550, null);
                 holder.unlockCanvasAndPost(canvas);
 
