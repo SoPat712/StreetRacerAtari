@@ -66,16 +66,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         float x = (int) event.values[0];
         if(carPos > 900) carPos = 900;
         if(carPos < 195) carPos = 195;
-        if(x >= 7) {carPos -= 20; return;}
-        if(x >= 5) {carPos -= 10; return;}
-        if(x >= 3) {carPos -= 8; return;}
-        if(x >= 2) {carPos -= 5; return;}
-        if(x >= 1) {carPos -= 3; return;}
-        if(x <= -7) {carPos += 20; return;}
-        if(x <= -5) {carPos += 10; return;}
-        if(x <= -3) {carPos += 8; return;}
-        if(x <= -2) {carPos += 5; return;}
-        if(x <= -1) carPos += 3;
+        if(x >= 7 && carPos - 20 >= 195) {carPos -= 20; return;}
+        if(x >= 5 && carPos - 10 >= 195) {carPos -= 10; return;}
+        if(x >= 3 && carPos - 8 >= 195) {carPos -= 8; return;}
+        if(x >= 2 && carPos - 5 >= 195) {carPos -= 5; return;}
+        if(x >= 1 && carPos - 3 >= 195) {carPos -= 3;} else if (x >= 1 && carPos + 3 <= 165){ carPos -= 1; return;}
+        if(x <= -7 && carPos + 20 <= 900) {carPos += 20; return;}
+        if(x <= -5 && carPos + 10 <= 900) {carPos += 10; return;}
+        if(x <= -3 && carPos + 8 <= 900) {carPos += 8; return;}
+        if(x <= -2 && carPos + 5 <= 900) {carPos += 5; return;}
+        if(x <= -1 && carPos + 3 <= 900) {carPos += 3;} else if (x <= -1 && carPos + 3 >= 900){ carPos += 1; return;}
     }
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -123,6 +123,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 Rect myCar = new Rect();
                 Rect enemyCar = new Rect();
                 canvas.drawBitmap(bg,0,0,null);
+                canvas.drawText("Blah", 0, 0, null);
                 canvas.drawBitmap(car, carPos, 1550, null);
                 holder.unlockCanvasAndPost(canvas);
 
