@@ -1,14 +1,9 @@
 package com.jp12.streetraceratari;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.res.ResourcesCompat;
-
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -17,22 +12,23 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
+import android.view.SoundEffectConstants;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.ScaleAnimation;
-import android.widget.ImageView;
-import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     //Code from this program has been used from Beginning Android Games
@@ -49,7 +45,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     boolean collision = false;
     int seconds = 30;
     int points = 0;
+    MediaPlayer soundPlayer;
     boolean gameEnd = false;
+    SoundPool pool;
+    int soundEffect;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,8 +56,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-        setContentView(gameSurface);
+        soundPlayer = new MediaPlayer();
+        AudioManager audioManager = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
+        soundPlayer = MediaPlayer.create(this, R.raw.songofstorms);
+        soundPlayer.start();
+        pool = new SoundPool.Builder().build();
 
+        soundEffect = pool.load(this, R.raw.carcrash, 1);
+        setContentView(gameSurface);
     }
 
     @Override
@@ -103,12 +108,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if(x >= 5 && carPos - 10 >= 195) {carPos -= 10; return;}
         if(x >= 3 && carPos - 8 >= 195) {carPos -= 8; return;}
         if(x >= 2 && carPos - 5 >= 195) {carPos -= 5; return;}
-        if(x >= 0.5 && carPos - 3 >= 195) {carPos -= 3;} else if (x >= 0.5 && carPos - 3 <= 195){ carPos -= 1; return;}
+        if(x >= 0.2 && carPos - 3 >= 195) {carPos -= 3;} else if (x >= 0.2 && carPos - 3 <= 195){ carPos -= 1; return;}
         if(x <= -7 && carPos + 20 <= 900) {carPos += 20; return;}
         if(x <= -5 && carPos + 10 <= 900) {carPos += 10; return;}
         if(x <= -3 && carPos + 8 <= 900) {carPos += 8; return;}
         if(x <= -2 && carPos + 5 <= 900) {carPos += 5; return;}
-        if(x <= -0.5 && carPos + 3 <= 900) {carPos += 3;} else if (x <= -0.5 && carPos + 3 >= 900){ carPos += 1; return;}
+        if(x <= -0.2 && carPos + 3 <= 900) {carPos += 3;} else if (x <= -0.2 && carPos + 3 >= 900){ carPos += 1; return;}
     }
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -180,6 +185,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     canvas.drawText(points + " points", 325f, 100f, paintProperty);
                     canvas.drawText( seconds + " seconds left", 200f, 300f, paintProperty);
                     if(Rect.intersects(myCarRect,enemyCarRect)){
+                        pool.play(soundEffect,0.2f,0.2f,1,0,1f);
                         collision = true;
                         collisionTime = seconds;
                     }
@@ -207,6 +213,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         if (seconds != 0){
                             seconds --;
                         } else{
+                            soundPlayer.stop();
                             gameEnd = true;
                             mSensorManager.unregisterListener(MainActivity.this,mAccelerometer);
                         }
