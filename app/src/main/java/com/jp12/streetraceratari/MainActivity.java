@@ -1,14 +1,18 @@
 package com.jp12.streetraceratari;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -41,6 +45,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     int enemyCarPos = 0;
     int changeY = 2;
     int enemyCarX = 500;
+    int collisionTime = 100;
+    boolean collision = false;
+    int seconds = 30;
+    int points = 0;
+    boolean gameEnd = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,7 +78,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent event) {
         float x = (int) event.values[0];
         if(enemyCarPos >= 1800){
-            enemyCarPos = 000;
+            if(collision){
+                collision = false;
+            } else{
+                points++;
+            }
+
+
+            enemyCarPos = -100;
             int rando = (int)(Math.random()*8+1);
             if(rando == 1) enemyCarX = 200;
             else if (rando == 2) enemyCarX = 300;
@@ -79,10 +95,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             else if (rando == 6) enemyCarX = 700;
             else if (rando == 7) enemyCarX = 800;
             else if (rando == 8) enemyCarX = 900;
-            System.out.println(rando);
         }
         enemyCarPos += changeY;
-        System.out.println(enemyCarPos);
         if(carPos > 900) carPos = 900;
         if(carPos < 195) carPos = 195;
         if(x >= 7 && carPos - 20 >= 195) {carPos -= 20; return;}
@@ -119,7 +133,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public GameSurface(Context context) {
             super(context);
             holder = getHolder();
-
             car = BitmapFactory.decodeResource(getResources(), R.drawable.car);
             enemyCar = BitmapFactory.decodeResource(getResources(), R.drawable.enemycar);
             bg = BitmapFactory.decodeResource(getResources(), R.drawable.atari);
@@ -147,13 +160,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (!holder.getSurface().isValid())
                     continue;
                 Canvas canvas = holder.lockCanvas();
-                canvas.drawRGB(255, 0, 0);
-                Rect myCarRect = new Rect();
-                Rect enemyCarRect = new Rect();
-                canvas.drawBitmap(bg,0,0,null);
-                canvas.drawBitmap(car, carPos, 1550, null);
+                if(!gameEnd){
+                    canvas.drawRGB(255, 0, 0);
+                    canvas.drawBitmap(bg,0,0,null);
+                    System.out.println("collTiem: "+ collisionTime);
+                    System.out.println("secs: "+seconds);
+                    if(collisionTime < seconds + 4){
+                        car = BitmapFactory.decodeResource(getResources(), R.drawable.crashedcar);
+                    } else{
+                        car = BitmapFactory.decodeResource(getResources(), R.drawable.car);
+                    }
+                    canvas.drawBitmap(car, carPos, 1550, null);
+                    canvas.drawBitmap(enemyCar, enemyCarX, enemyCarPos, null);
+                    Rect myCarRect = new Rect(carPos+8, 1550+8, carPos + 130 - 3, 1550 + 93 - 3);
+                    Rect enemyCarRect = new Rect(enemyCarX+8, enemyCarPos+8, enemyCarX + 130 - 3, enemyCarPos + 93 - 3);
+                    paintProperty.setTextSize(100f);
+                    Typeface plain = ResourcesCompat.getFont(MainActivity.this, R.font.rb);
+                    paintProperty.setTypeface(plain);
+                    canvas.drawText(points + " points", 325f, 100f, paintProperty);
+                    canvas.drawText( seconds + " seconds left", 200f, 300f, paintProperty);
+                    if(Rect.intersects(myCarRect,enemyCarRect)){
+                        collision = true;
+                        collisionTime = seconds;
+                    }
+                } else{
+                    canvas.drawRGB(255,255,255);
+                    paintProperty.setTextSize(100f);
+                    canvas.drawText("Game over",300f,500f, paintProperty);
+                    canvas.drawText("You got " + points + " points", 200f, 900f, paintProperty);
+                }
 
-                canvas.drawBitmap(enemyCar, enemyCarX, enemyCarPos, null);
                 holder.unlockCanvasAndPost(canvas);
 
             }
@@ -163,6 +199,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             running = true;
             gameThread = new Thread(this);
             gameThread.start();
+            Timer t = new Timer();
+            t.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    runOnUiThread(() -> {
+                        if (seconds != 0){
+                            seconds --;
+                        } else{
+                            gameEnd = true;
+                            mSensorManager.unregisterListener(MainActivity.this,mAccelerometer);
+                        }
+                    });
+                }
+            }, 0, 1000);
         }
 
         public void pause() {
