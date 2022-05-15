@@ -12,15 +12,12 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.MotionEvent;
-import android.view.SoundEffectConstants;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -43,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     int enemyCarX = 500;
     int collisionTime = 100;
     boolean collision = false;
-    int seconds = 30;
+    int seconds = 60;
     int points = 0;
     MediaPlayer soundPlayer;
     boolean gameEnd = false;
